@@ -68,6 +68,9 @@ elsif platform.is_windows?
   proj.setting(:cflags, "#{proj.cppflags}")
   proj.setting(:ldflags, "-L#{proj.tools_root}/lib -L#{proj.gcc_root}/lib -L#{proj.libdir} -Wl,--nxcompat -Wl,--dynamicbase")
   proj.setting(:cygwin, "nodosfilewarning winsymlinks:native")
+elsif platform.name =~ /^redhatfips-7-.*/
+  # Link against the system openssl instead of our vendored version:
+  proj.setting(:system_openssl, true)
 else
   proj.setting(:cppflags, "-I#{proj.includedir} -I/opt/pl-build-tools/include")
   proj.setting(:cflags, "#{proj.cppflags}")
@@ -79,7 +82,9 @@ end
 
 # Common deps
 proj.component "runtime-client-tools"
-proj.component "openssl-#{proj.openssl_version}"
+unless proj.settings[:system_openssl]
+  proj.component "openssl-#{proj.openssl_version}"
+end
 proj.component "curl"
 proj.component "puppet-ca-bundle"
 proj.component "libicu"
